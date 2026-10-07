@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stage 1 - Smart Maintenance</title><link rel="stylesheet" href="assets/style.css"><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<body><main class="main" style="margin:0;width:100%">
+<div class="topbar"><div><h1>Stage 1 — Static Analytics</h1><div class="muted">Dummy data + JavaScript calculations + validation</div></div><a class="btn secondary" href="index.php">Login</a></div>
+<div class="grid kpis"><div class="card"><div class="muted">Machines</div><div id="machines" class="kpi">0</div></div><div class="card"><div class="muted">Average Health</div><div id="health" class="kpi">0</div></div><div class="card"><div class="muted">Total Downtime</div><div id="down" class="kpi">0</div></div><div class="card"><div class="muted">Average MTBF</div><div id="mtbf" class="kpi">0</div></div></div>
+<div class="grid two" style="margin-top:16px"><div class="card"><h3>Machine Health</h3><canvas id="chart"></canvas></div><div class="card"><h3>Demo Form Validation</h3><form data-validate><label>Machine name*<input required></label><label>Downtime*<input required type="number" min="0"></label><label>Failure type*<input required></label><button class="btn primary">Validate</button></form></div></div>
+</main><script src="assets/app.js"></script><script>
+const machines=[
+ {name:'CNC-01',planned:720,downtime:12,failures:2,maintenance:95},
+ {name:'LAT-02',planned:720,downtime:6,failures:1,maintenance:98},
+ {name:'CON-03',planned:720,downtime:28,failures:3,maintenance:82},
+ {name:'PKG-04',planned:720,downtime:9,failures:1,maintenance:94}
+];
+const data=machines.map(m=>{
+ const availability=((m.planned-m.downtime)/m.planned)*100;
+ const health=Math.round(availability*.75+m.maintenance*.15+Math.max(0,100-m.failures*8)*.10);
+ const mtbf=(m.planned-m.downtime)/m.failures;
+ return {...m,availability,health,mtbf};
+});
+document.getElementById('machines').textContent=data.length;
+document.getElementById('health').textContent=Math.round(data.reduce((a,m)=>a+m.health,0)/data.length)+'/100';
+document.getElementById('down').textContent=data.reduce((a,m)=>a+m.downtime,0).toFixed(1)+' h';
+document.getElementById('mtbf').textContent=(data.reduce((a,m)=>a+m.mtbf,0)/data.length).toFixed(1)+' h';
+new Chart(document.getElementById('chart'),{type:'bar',data:{labels:data.map(m=>m.name),datasets:[{label:'Health Score',data:data.map(m=>m.health)}]},options:{scales:{y:{beginAtZero:true,max:100}}}});
+</script></body></html>
